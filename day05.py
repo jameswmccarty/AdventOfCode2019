@@ -279,7 +279,7 @@ if __name__ == "__main__":
 	prog_in = None
 	prog_out = None
 
-	# Part 1 Solution
+	# Part 2 Solution
 	with open("day05_input", 'r') as infile:
 		program = infile.readline().strip()
 		program = program.split(',')
