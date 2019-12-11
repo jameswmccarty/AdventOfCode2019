@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-from itertools import permutations
-
 """
 --- Day 9: Sensor Boost ---
 
