@@ -362,8 +362,6 @@ if __name__ == "__main__":
 		print(len(paint_ship(vm)[0]))
 
 	# Part 2 Solution
-	# not ZRZPKFZR
-	# not 7R7PKF7R
 	with open("day11_input", 'r') as infile:
 		prog = [ int(x) for x in infile.readline().strip().split(',') ]
 		vm = IntPuterVM(prog[:])
