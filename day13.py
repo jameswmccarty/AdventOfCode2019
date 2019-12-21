@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import copy
-
 """
 --- Day 13: Care Package ---
 
