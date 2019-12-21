@@ -160,6 +160,7 @@ def find_cost(c_name, ammount, chems):
 			cost += find_cost(n, q*scale, chems)
 	return cost
 
+# Was off by one on examples, works for input
 def fuel_search(cap, target, chems):
 	global surplus
 	l = 0
