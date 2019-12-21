@@ -158,7 +158,23 @@ def find_cost(c_name, ammount, chems):
 		for p in current_chem.prereqs:
 			q, n = p
 			cost += find_cost(n, q*scale, chems)
-	return cost			
+	return cost
+
+def fuel_search(cap, target, chems):
+	global surplus
+	l = 0
+	r = 1000000000000
+	while l <= r:
+		m = (l + r) // 2
+		surplus = dict()
+		cost = find_cost(target, m, chems)
+		if cost <= cap:
+			l = m + 1
+		elif cost > cap:
+			r = m - 1
+		else:
+			return m
+	return m	
 
 if __name__ == "__main__":
 
@@ -174,4 +190,9 @@ if __name__ == "__main__":
 			break
 	cost = find_cost("FUEL", 1, chems)
 	print(cost)
+
+	# Part 2 Solution
+	print(fuel_search(1000000000000, "FUEL", chems))
+
+		
 
