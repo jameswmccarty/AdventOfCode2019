@@ -483,7 +483,6 @@ if __name__ == "__main__":
 	print(discover_world())
 
 	# Part 2 Solution
-	# not 67
 	with open("day15_input", 'r') as infile:
 		prog = [ int(x) for x in infile.readline().strip().split(',') ]
 	vm = IntPuterVM(prog[:])
