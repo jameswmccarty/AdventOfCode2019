@@ -366,11 +366,13 @@ class IntPuterVM:
 			if not ip_updated:
 				ip += d_ip
 
+o_gen_loc = None
 world_map = dict()
 search_buffer = list()
 def discover_world():
 	global world_map
 	global search_buffer
+	global o_gen_loc
 	while len(search_buffer) > 0:
 		vm, pos, steps = search_buffer.pop(0)
 		x, y = pos
@@ -388,6 +390,7 @@ def discover_world():
 				if reply == 1:
 					search_buffer.append((n_vm, (x,y+1), steps+1))
 				elif reply == 2:
+					o_gen_loc = (x,y+1)
 					return steps+1
 		if (x, y-1) not in world_map:
 			for reply in s_vm.run():
@@ -395,6 +398,7 @@ def discover_world():
 				if reply == 1:
 					search_buffer.append((s_vm, (x,y-1), steps+1))
 				elif reply == 2:
+					o_gen_loc = (x,y-1)
 					return steps+1
 		if (x+1, y) not in world_map:
 			for reply in e_vm.run():
@@ -402,14 +406,71 @@ def discover_world():
 				if reply == 1:
 					search_buffer.append((e_vm, (x+1,y), steps+1))
 				elif reply == 2:
+					o_gen_loc = (x+1,y)
 					return steps+1
 		if (x-1, y) not in world_map:
 			for reply in w_vm.run():
 				world_map[(x-1,y)] = reply
-				if reply == 1 and (x-1,y):
+				if reply == 1:
 					search_buffer.append((w_vm, (x-1,y), steps+1))
 				elif reply == 2:
+					o_gen_loc = (x-1,y)
 					return steps+1
+
+def discover_world_full():
+	global world_map
+	global search_buffer
+	while len(search_buffer) > 0:
+		vm, pos = search_buffer.pop(0)
+		x, y = pos
+		n_vm = deepcopy(vm)
+		n_vm.buffer_read(1)
+		s_vm = deepcopy(vm)
+		s_vm.buffer_read(2)
+		e_vm = deepcopy(vm)
+		e_vm.buffer_read(3)
+		w_vm = deepcopy(vm)
+		w_vm.buffer_read(4)
+		if (x, y+1) not in world_map:
+			for reply in n_vm.run():
+				world_map[(x,y+1)] = reply
+				if reply == 1 or reply == 2:
+					search_buffer.append((n_vm, (x,y+1)))
+		if (x, y-1) not in world_map:
+			for reply in s_vm.run():
+				world_map[(x,y-1)] = reply
+				if reply == 1 or reply == 2:
+					search_buffer.append((s_vm, (x,y-1)))
+		if (x+1, y) not in world_map:
+			for reply in e_vm.run():
+				world_map[(x+1,y)] = reply
+				if reply == 1 or reply == 2:
+					search_buffer.append((e_vm, (x+1,y)))
+		if (x-1, y) not in world_map:
+			for reply in w_vm.run():
+				world_map[(x-1,y)] = reply
+				if reply == 1 or reply == 2:
+					search_buffer.append((w_vm, (x-1,y)))
+
+def time_o2():
+	global search_buffer
+	global world_map
+	seen = set()
+	max_steps = 0
+	while len(search_buffer) > 0:
+		pos, steps = search_buffer.pop(0)
+		x, y = pos
+		max_steps = max(max_steps, steps)
+		seen.add(pos)
+		if (x+1,y) not in seen and (x+1,y) in world_map and world_map[(x+1,y)] != 0:
+			search_buffer.append(((x+1,y),steps+1))
+		if (x-1,y) not in seen and (x-1,y) in world_map and world_map[(x-1,y)] != 0:
+			search_buffer.append(((x-1,y),steps+1))
+		if (x,y+1) not in seen and (x,y+1) in world_map and world_map[(x,y+1)] != 0:
+			search_buffer.append(((x,y+1),steps+1))
+		if (x,y-1) not in seen and (x,y-1) in world_map and world_map[(x,y-1)] != 0:
+			search_buffer.append(((x,y-1),steps+1))
+	return max_steps	
 
 if __name__ == "__main__":
 
@@ -420,4 +481,18 @@ if __name__ == "__main__":
 	world_map[(0,0)] = 1
 	search_buffer.append((vm, (0,0), 0))
 	print(discover_world())
+
+	# Part 2 Solution
+	# not 67
+	with open("day15_input", 'r') as infile:
+		prog = [ int(x) for x in infile.readline().strip().split(',') ]
+	vm = IntPuterVM(prog[:])
+	world_map = dict()
+	world_map[(0,0)] = 1
+	search_buffer = list()
+	search_buffer.append((vm, (0,0)))
+	discover_world_full()
+	search_buffer = list()
+	search_buffer.append((o_gen_loc, 0))
+	print(time_o2())
 
