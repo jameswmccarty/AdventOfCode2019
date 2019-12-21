@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import copy
+
 """
 --- Day 13: Care Package ---
 
@@ -269,7 +271,7 @@ class IntPuterVM:
 			if not ip_updated:
 				ip += d_ip
 
-def run_arcade(vm):
+def run_arcade1(vm):
 	outs = []
 	screen = dict()
 	while not vm.halted:
@@ -284,12 +286,37 @@ def run_arcade(vm):
 			screen[(x,y)] = p
 	return screen
 
+def play_game(vm, screen):
+	game_won = False
+	while not game_won:
+		if list(screen.values()).count(2) == 0 and (-1,0) in screen:
+			game_won = True
+			print(screen[(-1,0)])
+			return
+		outs = []
+		for o in vm.run():
+			outs.append(o)
+		while len(outs) >= 3:
+			pixel = outs[0:3]
+			outs = outs[3:]
+			x = pixel[0]
+			y = pixel[1]
+			p = pixel[2]
+			screen[(x,y)] = p
+		vm.buffer_read(0)
+
 if __name__ == "__main__":
 
 	# Part 1 Solution
 	with open("day13_input", 'r') as infile:
 		prog = [ int(x) for x in infile.readline().strip().split(',') ]
-		vm = IntPuterVM(prog[:])
-		screen = run_arcade(vm)
-		print(list(screen.values()).count(2))
-	
+	vm = IntPuterVM(prog[:])
+	screen = run_arcade1(vm)
+	print(list(screen.values()).count(2))
+
+	# Part 2 Solution
+	with open("day13_input", 'r') as infile:
+		prog = [ int(x) for x in infile.readline().strip().split(',') ]
+	vm = IntPuterVM(prog[:])
+	vm.mem[0] = 2
+	play_game(vm, screen)
