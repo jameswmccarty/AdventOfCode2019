@@ -107,13 +107,157 @@ Here are a few more examples:
 
 How many steps is the shortest path that collects all of the keys?
 
+--- Part Two ---
+
+You arrive at the vault only to discover that there is not one vault, but four - each with its own entrance.
+
+On your map, find the area in the middle that looks like this:
+
+...
+.@.
+...
+
+Update your map to instead use the correct data:
+
+@#@
+###
+@#@
+
+This change will split your map into four separate sections, each with its own entrance:
+
+#######       #######
+#a.#Cd#       #a.#Cd#
+##...##       ##@#@##
+##.@.##  -->  #######
+##...##       ##@#@##
+#cB#Ab#       #cB#Ab#
+#######       #######
+
+Because some of the keys are for doors in other vaults, it would take much too long to collect all of the keys by yourself. Instead, you deploy four remote-controlled robots. Each starts at one of the entrances (@).
+
+Your goal is still to collect all of the keys in the fewest steps, but now, each robot has its own position and can move independently. You can only remotely control a single robot at a time. Collecting a key instantly unlocks any corresponding doors, regardless of the vault in which the key or door is found.
+
+For example, in the map above, the top-left robot first collects key a, unlocking door A in the bottom-right vault:
+
+#######
+#@.#Cd#
+##.#@##
+#######
+##@#@##
+#cB#.b#
+#######
+
+Then, the bottom-right robot collects key b, unlocking door B in the bottom-left vault:
+
+#######
+#@.#Cd#
+##.#@##
+#######
+##@#.##
+#c.#.@#
+#######
+
+Then, the bottom-left robot collects key c:
+
+#######
+#@.#.d#
+##.#@##
+#######
+##.#.##
+#@.#.@#
+#######
+
+Finally, the top-right robot collects key d:
+
+#######
+#@.#.@#
+##.#.##
+#######
+##.#.##
+#@.#.@#
+#######
+
+In this example, it only took 8 steps to collect all of the keys.
+
+Sometimes, multiple robots might have keys available, or a robot might have to wait for multiple keys to be collected:
+
+###############
+#d.ABC.#.....a#
+######@#@######
+###############
+######@#@######
+#b.....#.....c#
+###############
+
+First, the top-right, bottom-left, and bottom-right robots take turns collecting keys a, b, and c, a total of 6 + 6 + 6 = 18 steps. Then, the top-left robot can access key d, spending another 6 steps; collecting all of the keys here takes a minimum of 24 steps.
+
+Here's a more complex example:
+
+#############
+#DcBa.#.GhKl#
+#.###@#@#I###
+#e#d#####j#k#
+###C#@#@###J#
+#fEbA.#.FgHi#
+#############
+
+    Top-left robot collects key a.
+    Bottom-left robot collects key b.
+    Top-left robot collects key c.
+    Bottom-left robot collects key d.
+    Top-left robot collects key e.
+    Bottom-left robot collects key f.
+    Bottom-right robot collects key g.
+    Top-right robot collects key h.
+    Bottom-right robot collects key i.
+    Top-right robot collects key j.
+    Bottom-right robot collects key k.
+    Top-right robot collects key l.
+
+In the above example, the fewest steps to collect all of the keys is 32.
+
+Here's an example with more choices:
+
+#############
+#g#f.D#..h#l#
+#F###e#E###.#
+#dCba@#@BcIJ#
+#############
+#nK.L@#@G...#
+#M###N#H###.#
+#o#m..#i#jk.#
+#############
+
+One solution with the fewest steps is:
+
+    Top-left robot collects key e.
+    Top-right robot collects key h.
+    Bottom-right robot collects key i.
+    Top-left robot collects key a.
+    Top-left robot collects key b.
+    Top-right robot collects key c.
+    Top-left robot collects key d.
+    Top-left robot collects key f.
+    Top-left robot collects key g.
+    Bottom-right robot collects key k.
+    Bottom-right robot collects key j.
+    Top-right robot collects key l.
+    Bottom-left robot collects key n.
+    Bottom-left robot collects key m.
+    Bottom-left robot collects key o.
+
+This example requires at least 72 steps to collect all keys.
+
+After updating your map and using the remote-controlled robots, what is the fewest steps necessary to collect all of the keys?
+
+Although it hasn't changed, you can still get your puzzle input.
 
 """
 
 world = dict()
 key_locs = dict()
-door_locs = dict()
 start = None
+starts = []
 
 def parse_line(idx, line):
 	global start
@@ -122,14 +266,23 @@ def parse_line(idx, line):
 		world[pos] = char
 		if char >= 'a' and char <= 'z':
 			key_locs[char] = pos
-		elif char >= 'A' and char <= 'Z':
-			door_locs[char] = pos
 		elif char == '@':
 			start = pos
 			world[pos] = '.'
 
+def parse_line2(idx, line):
+	global starts
+	for col, char in enumerate(line):
+		pos = (idx,col)
+		world[pos] = char
+		if char >= 'a' and char <= 'z':
+			key_locs[char] = pos
+		elif char == '@':
+			starts.append(pos)
+			world[pos] = '.'
+
 def key_search(start):
-	# ( steps, (x,y), {keys} )
+	# ( steps, (x,y), 'keys' )
 	loc    = start
 	steps  = 0 # Time spent searching
 	keys = ''
@@ -169,6 +322,61 @@ def key_search(start):
 						heapq.heappush(h, ( steps + 1, next_loc, keys ) )
 	return min_search
 
+def key_search2(starts):
+	"""
+	Gives incorrect solution for Test problem #3, but solves puzzle input.
+	"""
+	#            bot   bot   bot   bot
+	# ( steps, ((x,y),(x,y),(x,y),(x,y)), 'keys' )
+	locs   = starts
+	steps  = 0
+	keys = ''
+	h = []
+	heapq.heappush(h, ( steps, locs, keys) )
+	min_search = float('inf')
+	max_x = 0
+	max_y = 0
+	seen = [ set(), set(), set(), set() ]
+	for z, loc in enumerate(locs):
+		seen[z].add(hash((loc, keys)))
+	for key in world.keys():
+		x, y = key
+		max_x = max(x, max_x)
+		max_y = max(y, max_y)
+	while len(h) > 0 and h[0][0] <= min_search:
+		steps, locs, keys = heapq.heappop(h)
+		#print(steps, locs, keys)
+		locs = list(locs)
+		for z, loc in enumerate(locs):
+			l_keys = keys
+			x, y = loc
+			if world[loc] in key_locs.keys() and world[loc] not in l_keys:
+				l_keys = ''.join(sorted(l_keys+world[loc]))
+			if len(l_keys) == len(key_locs):
+				min_search = min(min_search, steps)
+			else:			
+				next_locs = []
+				if x > 0:
+					next_locs.append(((x-1, y),1))
+				if y > 0:
+					next_locs.append(((x, y-1),1))
+				if x < max_x:
+					next_locs.append(((x+1, y),1))
+				if y < max_y:
+					next_locs.append(((x, y+1),1))
+				next_locs.append((loc,0))
+				for next_loc in next_locs:
+					next_loc, d = next_loc
+					t = world[next_loc]
+					g_locs = locs
+					g_locs[z] = next_loc
+					g_locs = tuple(g_locs)
+					state = hash((next_loc, l_keys))
+					if (state not in seen[z]) and (t == '.' or (t.lower() in l_keys) or ('a' <= t <= 'z')):
+						seen[z].add(state)
+						heapq.heappush(h, ( steps + d, g_locs, l_keys ) )
+	return min_search
+
 if __name__ == "__main__":
 
 	# Part 1 Solution
@@ -190,11 +398,16 @@ if __name__ == "__main__":
 			line += world[(x,y)]
 		print(line)
 	"""
-	print(key_search(start))
+	#print(key_search(start))
 
-
-
-
-
-
-
+	# Part 2 Solution
+	world = dict()
+	key_locs = dict()
+	start = None
+	starts = []
+	with open('day18_input2', 'r') as infile:
+		idx = 0
+		for line in infile.readlines():
+			parse_line2(idx, line.strip())
+			idx += 1
+	print(key_search2(tuple(starts)))
