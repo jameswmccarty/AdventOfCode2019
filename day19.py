@@ -318,6 +318,13 @@ class IntPuterVM:
 			if not ip_updated:
 				ip += d_ip
 
+def check(x,y,prog):
+	vm = IntPuterVM(prog[:])
+	vm.buffer_read(x)
+	vm.buffer_read(y)	
+	for out in vm.run():
+		return out
+
 if __name__ == "__main__":
 
 	# Part 1 Solution
@@ -334,3 +341,12 @@ if __name__ == "__main__":
 				space[(x,y)] = out
 	print(list(space.values()).count(1))
 
+	# Part 2 Solution
+	x = 0
+	y = 0
+	while check(x+99,y,prog) != 1:
+		y += 1
+		while check(x,y+99,prog) != 1:
+			x += 1
+	print(x,y)
+	print(10000*x+y)		
