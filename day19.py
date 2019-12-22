@@ -348,5 +348,4 @@ if __name__ == "__main__":
 		y += 1
 		while check(x,y+99,prog) != 1:
 			x += 1
-	print(x,y)
 	print(10000*x+y)		
