@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from itertools import combinations
+
 """
 --- Day 25: Cryostasis ---
 
@@ -27,6 +29,18 @@ Santa's ship is a Reindeer-class starship; these ships use pressure-sensitive fl
 Look around the ship and see if you can find the password for the main airlock.
 
 To begin, get your puzzle input.
+
+--- Part Two ---
+
+As you move through the main airlock, the air inside the ship is already heating up to reasonable levels. Santa explains that he didn't notice you coming because he was just taking a quick nap. The ship wasn't frozen; he just had the thermostat set to "North Pole".
+
+You make your way over to the navigation console. It beeps. "Status: Stranded. Please supply measurements from 49 stars to recalibrate."
+
+"49 stars? But the Elves told me you needed fifty--"
+
+Santa just smiles and nods his head toward the window. There, in the distance, you can see the center of the Solar System: the Sun!
+
+The navigation console beeps again.
 
 """
 
@@ -266,16 +280,79 @@ class IntPuterVM:
 
 if __name__ == "__main__":
 
+	"""
 	# Part 1 Solution (for manual solution)
 	with open("day25_input", 'r') as infile:
 		prog = [ int(x) for x in infile.readline().strip().split(',') ]
 	vm = IntPuterVM(prog[:])
+	vm.buffer_read(10)
+	for out in vm.run():
+		print(chr(out), end='')
 
 	while True:
+		print('> ', end='')
 		command = input()
 		for char in command:
 			vm.buffer_read(ord(char))
 		vm.buffer_read(10)
 		for out in vm.run():
 			print(chr(out), end='')
-	
+	"""
+
+	# Part 1 Solution
+	with open("day25_input", 'r') as infile:
+		prog = [ int(x) for x in infile.readline().strip().split(',') ]
+	vm = IntPuterVM(prog[:])
+	vm.buffer_read(10)
+	for out in vm.run():
+		continue
+		#print(chr(out), end='')
+
+	seq = ['north', 'take dark matter', 'east', 'south', 'take dehydrated water', 'north', 'east', 'take bowl of rice', 'west', 'west', 'north', 'east', 'south', 'take antenna', 'west', 'take hypercube', 'east', 'north', 'west', 'north', 'take manifold', 'west', 'take jam', 'east', 'east', 'take candy cane', 'west', 'south', 'south', 'south', 'west', 'south', 'west'] # manually mapped
+
+	for cmd in seq: # gather all items
+		for char in cmd:
+			vm.buffer_read(ord(char))
+		vm.buffer_read(10)
+		for out in vm.run():
+			continue
+			#print(chr(out), end='')
+
+	items = ['jam', 'bowl of rice', 'antenna', 'manifold', 'hypercube', 'dehydrated water', 'candy cane', 'dark matter'] # all 'safe items'
+
+	for item in items: # drop all items at Arcade room
+		cmd = 'drop ' + item
+		for char in cmd:
+			vm.buffer_read(ord(char))
+		vm.buffer_read(10)
+		for out in vm.run():
+			continue
+			#print(chr(out), end='')	
+
+	for i in range(8):
+		for combo in list(combinations(items, i)):
+			for item in combo:
+				cmd = 'take ' + item
+				for char in cmd:
+					vm.buffer_read(ord(char))
+				vm.buffer_read(10)
+				for out in vm.run():
+					continue
+					#print(chr(out), end='')
+			for char in 'west':
+				vm.buffer_read(ord(char))
+			vm.buffer_read(10)
+			result = ''
+			for out in vm.run():
+				result += chr(out)
+			if 'Alert' not in result:
+				print(result)
+				exit()
+			for item in combo:
+				cmd = 'drop ' + item
+				for char in cmd:
+					vm.buffer_read(ord(char))
+				vm.buffer_read(10)
+				for out in vm.run():
+					continue
+					#print(chr(out), end='')	
