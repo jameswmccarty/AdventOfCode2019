@@ -104,7 +104,7 @@ def FFT(n, phases):
 		key = []
 		b_idx = 0
 		while len(key) < len(n)+1:
-			key += [base[b_idx%len(base)]] * (idx+1)
+			key += [base[b_idx%len(base)]] * min((idx+1), len(n)+1)
 			b_idx += 1
 		key = key[1:len(n)+1]
 		phase_keys.append(key)
@@ -117,15 +117,45 @@ def FFT(n, phases):
 			next.append(abs(val)%10)
 		n = next
 	return n
-	
+
+def phase_key(l, i):
+	base = [0,1,0,-1]
+	key = []
+	b_idx = 0
+	while len(key) < l+1:
+		key += [base[b_idx]] * min((i+1), l+1)
+		b_idx += 1
+		b_idx %= len(base)
+	return key[1:l+1]	
+
+def FFT2(n, phases):
+	for p in range(phases):
+		next = []
+		for i in range(len(n)):
+			val = 0
+			key = phase_key(len(n), i)
+			for x in range(len(n)):
+				val += n[x] * key[x]
+			next.append(abs(val)%10)
+		n = next
+	return n	
 
 if __name__ == "__main__":
 
 	# Part 1 Solution
 	with open('day16_input', 'r') as infile:
-		n = infile.readline()	
-	n = [ int(x) for x in n.strip() ]
+		n = infile.readline().strip()	
+	n = [ int(x) for x in n ]
 	print(''.join(str(i) for i in FFT(n,100)[0:8]))
+
+	# Part 2 Solution
+	with open('day16_input', 'r') as infile:
+		n = infile.readline().strip()
+	n = "03036732577212944063491565474664"
+	offset = int(n[0:7])	
+	n *= 10000	
+	n = [ int(x) for x in n ]
+	print(''.join(str(i) for i in FFT2(n,100)[offset:offset+8]))
 
 
 

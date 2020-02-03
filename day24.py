@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from copy import deepcopy
+
 """
 --- Day 24: Planet of Discord ---
 
@@ -235,8 +237,16 @@ Although it hasn't changed, you can still get your puzzle input.
 
 """
 
+gens = dict()
 board = dict()
 seen = set()
+
+def spawn_board():
+	new = dict()
+	for j in range(5):
+		for i in range(5):
+			new(i,j)] == '.':
+	return new
 
 def parse_line(idx, line):
 	global board
@@ -286,6 +296,44 @@ def score_board():
 			power *= 2
 	return total
 
+
+def parse2_line(idx, line, board):
+	for row, char in enumerate(line.strip()):
+		board[(row,idx)] = char
+	return board
+
+def survives2(x, y):
+	count = get_count2(x,y)
+	if board[(x,y)] == '#' and count == 1:
+		return True
+	elif board[(x,y)] == '.' and (count == 1 or count == 2):
+		return True
+	return False	
+
+def next_gen2():
+	global gens
+	next = deepcopy(gens)
+	for i in range(5):
+		for j in range(5):
+			if survives(j, i):
+				next[(j,i)] = '#'
+			else:
+				next[(j,i)] = '.'
+	board = next
+
+def get_count2(x, y, gen):
+	count = 0
+	if (x-1,y) in board and board[(x-1,y)] == '#':
+		count += 1
+	if (x+1,y) in board and board[(x+1,y)] == '#':
+		count += 1
+	if (x,y-1) in board and board[(x,y-1)] == '#':
+		count += 1
+	if (x,y+1) in board and board[(x,y+1)] == '#':
+		count += 1
+	return count
+
+
 if __name__ == "__main__":
 
 	# Part 1 Solution
@@ -300,6 +348,15 @@ if __name__ == "__main__":
 		seen.add(hash(frozenset(board.items())))
 		next_gen()
 	print(score_board())
+
+	# Part 2 Solution
+	gen0 = dict()
+	with open("day24_input", 'r') as infile:
+		idx = 0
+		for line in infile.readlines():
+			parse_line2(idx, line.strip(), gen0)
+			idx += 1
+	gens[0] = gen0
 	
 	
 	
