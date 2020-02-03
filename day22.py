@@ -198,8 +198,7 @@ def parse_line(line):
 
 def cut_2(i, N):
 	global decksize
-	#return ((decksize-N)+i) % decksize
-	return (N+i) % decksize
+	return ((decksize-N)+i) % decksize
 
 def deal_2(i, N):
 	global decksize
@@ -223,49 +222,7 @@ def parse_line_2(line, i):
 	return i
 
 def unshuffle(n):
-	return ((n - 2) * 6871724559536 + 140568611385) % 119315717514047
-
-"""
-Next function borrowed:
-https://github.com/metalim/metalim.adventofcode.2019.python/blob/master/22_cards_shuffle.ipynb
-"""
-# modpow the polynomial: (ax+b)^m % n
-# f(x) = ax+b
-# g(x) = cx+d
-# f^2(x) = a(ax+b)+b = aax + ab+b
-# f(g(x)) = a(cx+d)+b = acx + ad+b
-def polypow(a,b,m,n):
-    if m==0:
-        return 1,0
-    if m%2==0:
-        return polypow(a*a%n, (a*b+b)%n, m//2, n)
-    else:
-        c,d = polypow(a,b,m-1,n)
-        return a*c%n, (a*d+b)%n
-
-def shuffle2(L, N, a, b, pos):
-    a,b = polypow(a,b,N,L)
-    return (pos*a+b)%L
-
-def parse3(L, rules):
-    a,b = 1,0
-    for s in rules[::-1]:
-        if s == 'deal into new stack':
-            a = -a
-            b = L-b-1
-            continue
-        if s.startswith('cut'):
-            n = int(s.split(' ')[1])
-            b = (b+n)%L
-            continue
-        if s.startswith('deal with increment'):
-            n = int(s.split(' ')[3])
-            z = pow(n,L-2,L) # == modinv(n,L)
-            a = a*z % L
-            b = b*z % L
-            continue
-        raise Exception('unknown rule', s)
-    return a,b
+	return ((n - 140568611385) / 6871724559536) + 2
 
 if __name__ == "__main__":
 
@@ -277,17 +234,18 @@ if __name__ == "__main__":
 			parse_line(line.strip())
 	print(deck.index(2019))
 
-
+	"""
 	place = 2019
 	decksize = 10007
 	with open("day22_input", 'r') as infile:
 		for line in infile.readlines():
 			place = parse_line_2(line.strip(), place)
 	print(place)
-
+	"""
 
 	# Part 2 Solution
 
+	"""
 	big_size = 119315717514047
 	num_shuffle = 101741582076661
 	shuff_seq = []
@@ -303,8 +261,6 @@ if __name__ == "__main__":
 			place = parse_line_2(step, place)
 		print(z, place)
 
-	"""
-
 
 	# Place				Delta		Difference
 	# 0	105712837006360		
@@ -314,13 +270,4 @@ if __name__ == "__main__":
 	# 4	13884017730457	6871724559536	
 
 	# Linear sequence: P1 = ((P0 - 2) * 6871724559536 + 140568611385) % 119315717514047
-
 	"""
-	"""
-	big_size = 119315717514047
-	num_shuffle = 101741582076661
-	print(shuffle2(big_size,num_shuffle,78329155583898,41150195162392,2020))
-	"""
-	
-
-
