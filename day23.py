@@ -53,10 +53,6 @@ class IntPuterVM:
 		self.prog_in.append(i)
 		self.blocked = False
 
-	def network_read(self, x, y):
-		self.buffer_read(x)
-		self.buffer_read(y)
-
 	def ascii_read(self, cmd):
 		for char in cmd:
 			self.buffer_read(ord(char))
@@ -296,7 +292,8 @@ if __name__ == "__main__":
 		netbuf[i] = list()
 	for i in range(num_vms):
 		vms[i].buffer_read(i)
-	while True:
+	solving = True
+	while solving:
 		for i in range(num_vms):
 			for out in vms[i].run():
 				netbuf[i].append(out)
@@ -307,10 +304,52 @@ if __name__ == "__main__":
 				netbuf[i] = list()
 				if dest == 255:
 					print(y)
-					exit()
+					solving = False
+					break
 				if dest <= num_vms:
 					vms[dest].buffer_read(x)
 					vms[dest].buffer_read(y)
 
-
-			
+	# Part 2 Solution
+	with open("day23_input", 'r') as infile:
+		prog = [ int(x) for x in infile.readline().strip().split(',') ]
+	num_vms = 50
+	vms = []
+	netbuf = dict()
+	seen_y = set()
+	for i in range(num_vms):
+		vms.append(IntPuterVM(prog[:]))
+		netbuf[i] = list()
+	netbuf[255] = list()
+	for i in range(num_vms):
+		vms[i].buffer_read(i)
+	solving = True
+	while solving:
+		for i in range(num_vms):
+			for out in vms[i].run():
+				netbuf[i].append(out)
+			if len(netbuf[i]) == 3:
+				dest = netbuf[i][0]
+				x    = netbuf[i][1]
+				y    = netbuf[i][2]
+				netbuf[i] = list()
+				if dest == 255:
+					netbuf[255] = [x, y]
+				if dest <= num_vms:
+					vms[dest].buffer_read(x)
+					vms[dest].buffer_read(y)
+		pending_data = False
+		for z in range(num_vms):
+			if len(vms[z].prog_in) > 0:
+				pending_data = True
+				break				
+		if pending_data == False and len(netbuf[255]) == 2:
+				vms[0].buffer_read(netbuf[255][0])
+				vms[0].buffer_read(netbuf[255][1])
+				if netbuf[255][1] in seen_y:
+					print(netbuf[255][1])
+					solving = False
+					break
+				else:
+					seen_y.add(netbuf[255][1])
+					netbuf[255] = list()			
